@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSeedling, faCarrot, faUtensils } from "@fortawesome/free-solid-svg-icons";
+import { faSeedling, faCarrot, faUtensils, faCircleArrowLeft } from "@fortawesome/free-solid-svg-icons";
 
 function App() {
   const [page, setPage] = useState("menu");
@@ -193,7 +193,7 @@ const filteredCategories = categories
             onClick={resetMode}
             className="text-[#7c9425] text-sm font-semibold"
           >
-            Change mode
+            Change
           </button>
         </div>
       </div>
@@ -272,25 +272,20 @@ const filteredCategories = categories
             id={category.slug}
             title={category.name}
           >
-            <div className={hasCustomisable ? "space-y-4" : "grid grid-cols-2 gap-4"}>
+            <div className="grid grid-cols-2 gap-4">
               {category.dishes.map((dish) =>
                 dish.is_customisable ? (
-                  <Dish
+                  <CustomisableDishCard
                     key={dish.id}
                     name={dish.name}
                     price={`€${Number(dish.price).toFixed(2)}`}
-                    allergens={dish.allergens}
+                    image={getImageUrl(dish.image)}
+                    allergens={dish.allergens || []}
                     onOpen={() =>
                       setSelectedDish({
                         ...dish,
                         price: `€${Number(dish.price).toFixed(2)}`,
                         image: getImageUrl(dish.image),
-                      })
-                    }
-                    onAdd={() =>
-                      addToCart({
-                        name: dish.name,
-                        price: Number(dish.price),
                       })
                     }
                   />
@@ -299,8 +294,8 @@ const filteredCategories = categories
                     key={dish.id}
                     name={dish.name}
                     price={`€${Number(dish.price).toFixed(2)}`}
-                    allergens={dish.allergens}
                     image={getImageUrl(dish.image)}
+                    allergens={dish.allergens || []}
                     onAdd={() =>
                       addToCart({
                         name: dish.name,
@@ -349,7 +344,7 @@ function Dish({ name, price, onAdd, onOpen, allergens = [] }) {
       <h2 className="font-display text-base tracking-tight">
         {name}
         {allergens.length > 0 && (
-          <sup className="font-sans ml-1 text-[11px] text-gray-400 text-bold align-super">
+          <sup className="font-sans ml-1 text-[11px] text-gray-400 text-bold relative -top-1.5">
             {allergens.map(a => a.number).join(",")}
           </sup>
         )}
@@ -363,16 +358,59 @@ function Dish({ name, price, onAdd, onOpen, allergens = [] }) {
             e.stopPropagation();
             onAdd();
           }}
-          className="bg-[#7c9425] text-white px-3 py-1 rounded-lg text-sm"
+          className="bg-[#7c9425] text-white px-3 py-1 rounded-lg text-sm font-semibold"
         >
-          Add
+          ADD
         </button>
       </div>
     </div>
   );
 }
 
+function CustomisableDishCard({ name, price, image, onOpen, allergens = [] }) {
+  return (
+    <button
+      onClick={onOpen}
+      className="col-span-2 bg-[#c59257] text-white rounded-2xl shadow overflow-hidden text-left active:scale-[0.98] transition"
+    >
+      <div className="h-36 overflow-hidden">
+        <img
+          src={image}
+          alt={name}
+          className="w-full h-full object-cover"
+        />
+      </div>
 
+      <div className="p-4">
+        <div className="flex justify-between items-start gap-3">
+          <div>
+            <h3 className="font-display text-base tracking-tight text-white/90">
+              {name}
+              {allergens.length > 0 && (
+                <sup className="font-sans ml-1 text-[11px] text-white/70 font-bold relative -top-1.5">
+                  {allergens.map(a => a.number).join(",")}
+                </sup>
+              )}
+            </h3>
+            <p className="text-sm text-white/90 mt-2 leading-snug">
+              Choose your sauce, portion size and favourite toppings.
+            </p>
+          </div>
+
+          <span className="font-bold whitespace-nowrap text-[15px]">
+            from {price}
+          </span>
+        </div>
+
+        <div className="mt-4">
+          <span className="inline-block bg-white text-[#c59257] px-3 py-1 rounded-lg text-sm font-semibold">
+            CUSTOMISE
+          </span>
+        </div>
+      </div>
+    </button>
+  );
+}
 
 function ImageDishCard({ name, price, image, onAdd, allergens = [] }) {
   return (
@@ -385,7 +423,7 @@ function ImageDishCard({ name, price, image, onAdd, allergens = [] }) {
         <h3 className="font-display text-base tracking-tight">
           {name}
           {allergens.length > 0 && (
-            <sup className="font-sans ml-1 text-[11px] text-gray-400 font-bold align-super">
+            <sup className="font-sans ml-1 text-[11px] text-gray-400 font-bold relative -top-1.5">
               {allergens.map(a => a.number).join(",")}
             </sup>
           )}
@@ -395,9 +433,9 @@ function ImageDishCard({ name, price, image, onAdd, allergens = [] }) {
           <span className="font-bold text-[15px]">{price}</span>
           <button
             onClick={onAdd}
-            className="bg-[#7c9425] text-white px-3 py-1 rounded-lg text-sm"
+            className="bg-[#7c9425] text-white px-3 py-1 rounded-lg text-sm font-semibold"
           >
-            Add
+            ADD
           </button>
         </div>
       </div>
@@ -647,13 +685,13 @@ function OrderDetailsForm({ orderMode, onConfirm, onBack }) {
         onClick={onBack}
         className="text-[#7c9425] font-semibold"
       >
-        ← Change order mode
+        <FontAwesomeIcon icon={faCircleArrowLeft} /> Back to mode selection
       </button>
 
       {/* DINE IN */}
       {orderMode === "table" && (
         <div className="bg-white rounded-2xl shadow p-6 space-y-4">
-          <h2 className="text-lg font-bold">Table number</h2>
+          <h2 className="font-display text-lg font-semibold tracking-tight">Table number</h2>
 
           <input
             type="number"
@@ -678,7 +716,7 @@ function OrderDetailsForm({ orderMode, onConfirm, onBack }) {
       {/* TAKEAWAY */}
       {orderMode === "takeaway" && (
         <div className="bg-white rounded-2xl shadow p-6 space-y-4">
-          <h2 className="text-lg font-bold">Pick-up details</h2>
+          <h2 className="font-display text-lg font-semibold tracking-tight">Pick-up details</h2>
 
           <input
             type="text"
@@ -745,7 +783,7 @@ function Cart({ cart, setCart, onClose }) {
 
         {/* Header */}
         <div className="flex justify-between items-center mb-4">
-          <h2 className="font-display text-xl font-bold tracking-tight">Your order</h2>
+          <h2 className="font-display text-xl font-semibold tracking-tight">Your order</h2>
           <button onClick={onClose} className="text-2xl font-bold">×</button>
         </div>
 
@@ -843,11 +881,11 @@ function FooterAllergens() {
   return (
     <div className="mt-10 text-xs text-gray-500 space-y-3 pb-10">
       
-      <p className>
+      <p>
         For any <b>allergies</b> or <b>intolerances</b>, please speak to a member of staff before ordering.
       </p>
 
-      <p className>
+      <p>
         Dishes marked with numbers indicate the presence of allergens listed below.
         Although every care is taken in preparing our dishes, we cannot guarantee the complete absence of cross-contamination.
       </p>
