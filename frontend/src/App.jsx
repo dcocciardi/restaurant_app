@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSeedling, faCarrot, faUtensils, faCircleArrowLeft } from "@fortawesome/free-solid-svg-icons";
+import { faSeedling, faCarrot, faUtensils, faCircleArrowLeft, faCircleXmark, faCircleMinus, faCirclePlus, faTrash } from "@fortawesome/free-solid-svg-icons";
 
 function App() {
   const [page, setPage] = useState("menu");
@@ -563,9 +563,9 @@ function DishDetail({ dish, onClose, addToCart }) {
           {/* Close button */}
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 bg-white/80 backdrop-blur rounded-full w-10 h-10 flex items-center justify-center text-xl font-bold"
+            className="absolute top-4 right-4 w-10 h-10 flex items-center justify-center text-white text-2xl"
           >
-            ×
+            <FontAwesomeIcon icon={faCircleXmark} />
           </button>
         </div>
 
@@ -577,8 +577,8 @@ function DishDetail({ dish, onClose, addToCart }) {
               onClick={() => setSize("regular")}
               className={`flex-1 rounded-2xl p-3 text-center font-semibold ${
                 size === "regular"
-                  ? "bg-[#7c9425] text-white"
-                  : "bg-[#C8D6C5]"
+                  ? "bg-[#c59257] text-white"
+                  : "bg-[#D5B085]"
               }`}
             >
               Regular
@@ -588,8 +588,8 @@ function DishDetail({ dish, onClose, addToCart }) {
               onClick={() => setSize("xl")}
               className={`flex-1 rounded-2xl p-3 text-center font-semibold ${
                 size === "xl"
-                  ? "bg-[#7c9425] text-white"
-                  : "bg-[#C8D6C5]"
+                  ? "bg-[#c59257] text-white"
+                  : "bg-[#D5B085]"
               }`}
             >
               XL
@@ -600,8 +600,8 @@ function DishDetail({ dish, onClose, addToCart }) {
               onClick={() => setSize("xxl")}
               className={`flex-1 rounded-2xl p-3 text-center font-semibold ${
                 size === "xxl"
-                  ? "bg-[#7c9425] text-white"
-                  : "bg-[#C8D6C5]"
+                  ? "bg-[#c59257] text-white"
+                  : "bg-[#D5B085]"
               }`}
             >
               XXL
@@ -627,16 +627,16 @@ function DishDetail({ dish, onClose, addToCart }) {
             <div className="flex items-center gap-3">
               <button
                 onClick={() => updateQty(index, -1)}
-                className="w-8 h-8 rounded-full bg-gray-200"
+                className="w-10 h-10 flex items-center justify-center text-gray-300 text-2xl"
               >
-                −
+                <FontAwesomeIcon icon={faCircleMinus} />
               </button>
               <span className="font-semibold">{ing.qty}</span>
               <button
                 onClick={() => updateQty(index, 1)}
-                className="w-8 h-8 rounded-full bg-[#7c9425] text-white"
+                className="w-10 h-10 flex items-center justify-center text-[#c59257] text-2xl"
               >
-                +
+                <FontAwesomeIcon icon={faCirclePlus} />
               </button>
             </div>
           </div>
@@ -655,7 +655,7 @@ function DishDetail({ dish, onClose, addToCart }) {
               });
               onClose();
             }}
-            className="w-full bg-[#7c9425] text-white py-4 rounded-xl text-lg font-semibold"
+            className="w-full bg-[#c59257] text-white py-4 rounded-xl text-lg font-semibold"
           >
             Add to cart · €{finalPrice}
         </button>
@@ -777,6 +777,10 @@ function Cart({ cart, setCart, onClose }) {
     });
   };
 
+  const removeItem = (index) => {
+    setCart(prev => prev.filter((_, i) => i !== index));
+  };
+
   return (
     <div className="fixed inset-0 z-50 bg-black/40">
       <div className="absolute bottom-0 left-0 right-0 bg-[#F5F1EA] rounded-t-3xl p-6 max-h-[85vh] overflow-y-auto">
@@ -826,9 +830,9 @@ function Cart({ cart, setCart, onClose }) {
                     e.stopPropagation();
                     updateQty(index, -1);
                   }}
-                  className="w-8 h-8 rounded-full bg-gray-200 text-white flex items-center justify-center pb-1"
+                  className="w-10 h-10 flex items-center justify-center text-gray-300 text-2xl"
                 >
-                  −
+                  <FontAwesomeIcon icon={faCircleMinus} />
                 </button>
 
                 <span className="font-semibold">{item.qty}</span>
@@ -840,11 +844,23 @@ function Cart({ cart, setCart, onClose }) {
                     e.stopPropagation();
                     updateQty(index, 1);
                   }}
-                  className="w-8 h-8 rounded-full bg-[#7c9425] text-white flex items-center justify-center pb-1"
+                  className="w-10 h-10 flex items-center justify-center text-[#7c9425] text-2xl"
                 >
-                  +
+                  <FontAwesomeIcon icon={faCirclePlus} />
                 </button>
               </div>
+
+              {/* BOTTONE TRASH */}
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  removeItem(index);
+                }}
+                className="w-10 h-10 flex items-center justify-center text-[#943232] text-xl active:scale-90 transition"
+              >
+                <FontAwesomeIcon icon={faTrash} />
+              </button>
 
               <div className="font-bold">
                 €{(item.price * item.qty).toFixed(2)}
