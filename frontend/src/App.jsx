@@ -394,7 +394,7 @@ function ImageDishCard({ name, price, image, onAdd }) {
 function Home() {
   return (
     <div className="bg-white rounded-2xl shadow p-6 text-center">
-      <h2 className="text-lg font-semibold mb-2">Welcome to Efregn</h2>
+      <h2 className="font-display text-xl font-semibold tracking-tight mb-4">Welcome to Efregn</h2>
       <p className="text-gray-600">
         This section will soon link to the restaurant’s main website.
       </p>
@@ -405,7 +405,7 @@ function Home() {
 function Fidelity() {
   return (
     <div className="bg-white rounded-2xl shadow p-6 text-center">
-      <h2 className="text-lg font-semibold mb-2">Loyalty card</h2>
+      <h2 className="font-display text-xl font-semibold tracking-tight mb-4">Loyalty card</h2>
       <p className="text-gray-600 mb-4">
         Log in or sign up to collect points and unlock exclusive rewards.
       </p>
