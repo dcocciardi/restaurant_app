@@ -14,6 +14,18 @@ class Category(models.Model):
         return self.name
 
 
+class Allergen(models.Model):
+    number = models.PositiveIntegerField(unique=True)
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ["number"]
+
+    def __str__(self):
+        return f"{self.number}. {self.name}"
+
+
 class Dish(models.Model):
     category = models.ForeignKey(
         Category,
@@ -29,7 +41,7 @@ class Dish(models.Model):
     is_customisable = models.BooleanField(default=False)
     is_vegetarian = models.BooleanField(default=False)
     is_vegan = models.BooleanField(default=False)
-
+    allergens = models.ManyToManyField(Allergen, blank=True, related_name="dishes")
     order = models.PositiveIntegerField(default=0)
 
     class Meta:

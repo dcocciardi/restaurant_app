@@ -279,6 +279,7 @@ const filteredCategories = categories
                     key={dish.id}
                     name={dish.name}
                     price={`€${Number(dish.price).toFixed(2)}`}
+                    allergens={dish.allergens}
                     onOpen={() =>
                       setSelectedDish({
                         ...dish,
@@ -298,6 +299,7 @@ const filteredCategories = categories
                     key={dish.id}
                     name={dish.name}
                     price={`€${Number(dish.price).toFixed(2)}`}
+                    allergens={dish.allergens}
                     image={getImageUrl(dish.image)}
                     onAdd={() =>
                       addToCart({
@@ -338,16 +340,23 @@ function MenuSection({ id, title, children }) {
   );
 }
 
-function Dish({ name, price, onAdd, onOpen }) {
+function Dish({ name, price, onAdd, onOpen, allergens = [] }) {
   return (
     <div
       onClick={onOpen}
       className="bg-white rounded-2xl shadow p-4 cursor-pointer"
     >
-      <h2 className="font-semibold text-lg">{name}</h2>
+      <h2 className="font-display text-base tracking-tight">
+        {name}
+        {allergens.length > 0 && (
+          <sup className="font-sans ml-1 text-[11px] text-gray-400 text-bold align-super">
+            {allergens.map(a => a.number).join(",")}
+          </sup>
+        )}
+      </h2>
 
       <div className="flex justify-between items-center mt-3">
-        <span className="font-bold">{price}</span>
+        <span className="font-bold text-[15px]">{price}</span>
 
         <button
           onClick={(e) => {
@@ -365,7 +374,7 @@ function Dish({ name, price, onAdd, onOpen }) {
 
 
 
-function ImageDishCard({ name, price, image, onAdd }) {
+function ImageDishCard({ name, price, image, onAdd, allergens = [] }) {
   return (
     <div className="bg-white rounded-2xl shadow overflow-hidden">
       <div className="aspect-square">
@@ -373,10 +382,17 @@ function ImageDishCard({ name, price, image, onAdd }) {
       </div>
 
       <div className="p-3 space-y-1">
-        <h3 className="font-semibold text-sm">{name}</h3>
+        <h3 className="font-display text-base tracking-tight">
+          {name}
+          {allergens.length > 0 && (
+            <sup className="font-sans ml-1 text-[11px] text-gray-400 font-bold align-super">
+              {allergens.map(a => a.number).join(",")}
+            </sup>
+          )}
+        </h3>
 
         <div className="flex justify-between items-center">
-          <span className="font-bold text-sm">{price}</span>
+          <span className="font-bold text-[15px]">{price}</span>
           <button
             onClick={onAdd}
             className="bg-[#7c9425] text-white px-3 py-1 rounded-lg text-sm"
@@ -729,7 +745,7 @@ function Cart({ cart, setCart, onClose }) {
 
         {/* Header */}
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold">Your order</h2>
+          <h2 className="font-display text-xl font-bold tracking-tight">Your order</h2>
           <button onClick={onClose} className="text-2xl font-bold">×</button>
         </div>
 

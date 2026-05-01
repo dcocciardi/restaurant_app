@@ -23,6 +23,13 @@ def get_menu(request):
                     "is_customisable": dish.is_customisable,
                     "is_vegetarian": dish.is_vegetarian,
                     "is_vegan": dish.is_vegan,
+                    "allergens": [
+                        {
+                            "number": allergen.number,
+                            "name": allergen.name,
+                        }
+                        for allergen in dish.allergens.all()
+                    ],
                 }
                 for dish in category.dishes.filter(is_available=True)
             ]
