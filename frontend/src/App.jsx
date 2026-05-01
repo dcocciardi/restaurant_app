@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faSeedling, faCarrot, faUtensils } from "@fortawesome/free-solid-svg-icons";
 
 function App() {
   const [page, setPage] = useState("menu");
@@ -96,7 +98,7 @@ function App() {
           className="fixed bottom-16 left-4 right-4 bg-[#7c9425] text-white rounded-2xl px-5 py-4 shadow-xl flex justify-between items-center z-40"
         >
           <span className="font-semibold">
-            {cart.length} item{cart.length > 1 ? "s" : ""} in cart
+            {cart.reduce((sum, i) => sum + i.qty, 0)} item{cart.reduce((sum, i) => sum + i.qty, 0) > 1 ? "s" : ""} in cart
           </span>
           <span className="font-bold">
             €{cart.reduce((sum, i) => sum + i.price * i.qty, 0).toFixed(2)}
@@ -132,9 +134,50 @@ function NavButton({ label, active, onClick }) {
 }
 
 function Menu({ orderMode, resetMode, setSelectedDish, addToCart }) {
+  const [categories, setCategories] = useState([]);
+  const [dietFilter, setDietFilter] = useState("all");
+
+  const API_BASE = `http://${window.location.hostname}:8000`;
+
+  useEffect(() => {
+    fetch(`${API_BASE}/api/menu/`)
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(`HTTP error ${res.status}`);
+        }
+        return res.json();
+      })
+      .then((data) => {
+        console.log("Menu loaded:", data);
+        setCategories(data);
+      })
+      .catch((err) => {
+        console.error("Menu API error:", err);
+      });
+  }, []);
+
+  const getImageUrl = (image) => {
+    if (!image) return "/src/assets/dishes/placeholder.jpg";
+    if (image.startsWith("http")) return image;
+    return `${API_BASE}${image}`;
+  };
+
+  const filterDish = (dish) => {
+  if (dietFilter === "vegetarian") return dish.is_vegetarian;
+  if (dietFilter === "vegan") return dish.is_vegan;
+  if (dietFilter === "customisable") return dish.is_customisable;
+  return true;
+};
+
+const filteredCategories = categories
+  .map((category) => ({
+    ...category,
+    dishes: category.dishes.filter(filterDish),
+  }))
+  .filter((category) => category.dishes.length > 0);
+
   return (
     <>
-      {/* Order mode banner */}
       <div className="bg-white rounded-2xl shadow p-4 mb-4">
         <div className="flex justify-between items-center">
           <span className="text-sm font-medium">
@@ -145,6 +188,7 @@ function Menu({ orderMode, resetMode, setSelectedDish, addToCart }) {
               {orderMode === "delivery" && "Delivery"}
             </strong>
           </span>
+
           <button
             onClick={resetMode}
             className="text-[#7c9425] text-sm font-semibold"
@@ -154,92 +198,122 @@ function Menu({ orderMode, resetMode, setSelectedDish, addToCart }) {
         </div>
       </div>
 
-      {/* Section jump bar */}
+      {/* -- VECCHIA BARRA PER FILTRARE SEZIONI DEL MENU --
       <div className="sticky top-[80px] z-10 bg-[#F5F1EA] py-2 px-1 mb-4">
         <div className="flex gap-3 overflow-x-auto text-sm font-semibold">
-          <SectionLink label="Starters" to="starters" />
-          <SectionLink label="Pasta" to="pasta" />
-          <SectionLink label="Drinks" to="drinks" />
-          <SectionLink label="Sweets" to="sweets" />
+          {categories.length === 0 && (
+            <div className="bg-white rounded-2xl shadow p-4 text-center text-gray-500">
+              No dishes loaded. Check Django API.
+            </div>
+          )}
+          {categories.map((category) => (
+            <SectionLink
+              key={category.id}
+              label={category.name}
+              to={category.slug}
+            />
+          ))}
+        </div>
+      </div> */}
+
+      <div className="sticky top-[80px] z-10 bg-[#F5F1EA] py-1 px-1 mb-4">
+        <div className="flex gap-3 overflow-x-auto pb-1 -mt-1">
+
+          {/* ALL */}
+          <button
+            onClick={() => setDietFilter("all")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-full shadow text-sm font-semibold ${
+              dietFilter === "all"
+                ? "bg-[#7c9425] text-white"
+                : "bg-white text-[#7c9425]"
+            }`}
+          >
+            <FontAwesomeIcon icon={faUtensils} />
+            All
+          </button>
+
+          {/* VEGAN */}
+          <button
+            onClick={() => setDietFilter("vegan")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-full shadow text-sm font-semibold ${
+              dietFilter === "vegan"
+                ? "bg-[#7c9425] text-white"
+                : "bg-white text-[#7c9425]"
+            }`}
+          >
+            <FontAwesomeIcon icon={faSeedling} />
+            Vegan
+          </button>
+
+          {/* VEGETARIAN */}
+          <button
+            onClick={() => setDietFilter("vegetarian")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-full shadow text-sm font-semibold ${
+              dietFilter === "vegetarian"
+                ? "bg-[#7c9425] text-white"
+                : "bg-white text-[#7c9425]"
+            }`}
+          >
+            <FontAwesomeIcon icon={faCarrot} />
+            Vegetarian
+          </button>
+
         </div>
       </div>
 
-      {/* SECTIONS */}
-      <MenuSection id="starters" title="Starters">
-        <div className="grid grid-cols-2 gap-4">
-          <ImageDishCard
-            name="Oven roasted potatoes"
-            price="€2.50"
-            image="/src/assets/dishes/potatoes.jpg"
-            onAdd={() =>
-              addToCart({
-                name: "Oven roasted potatoes",
-                price: 2.5
-              })
-            }
-          />
+      {filteredCategories.map((category) => {
+        const hasCustomisable = category.dishes.some(
+          (dish) => dish.is_customisable
+        );
 
-          <ImageDishCard
-            name="Bella di Cerignola olives"
-            price="€3.00"
-            image="/src/assets/dishes/olives.jpg"
-            onAdd={() =>
-              addToCart({
-                name: "Bella di Cerignola olives",
-                price: 3
-              })
-            }
-          />
+        return (
+          <MenuSection
+            key={category.id}
+            id={category.slug}
+            title={category.name}
+          >
+            <div className={hasCustomisable ? "space-y-4" : "grid grid-cols-2 gap-4"}>
+              {category.dishes.map((dish) =>
+                dish.is_customisable ? (
+                  <Dish
+                    key={dish.id}
+                    name={dish.name}
+                    price={`€${Number(dish.price).toFixed(2)}`}
+                    onOpen={() =>
+                      setSelectedDish({
+                        ...dish,
+                        price: `€${Number(dish.price).toFixed(2)}`,
+                        image: getImageUrl(dish.image),
+                      })
+                    }
+                    onAdd={() =>
+                      addToCart({
+                        name: dish.name,
+                        price: Number(dish.price),
+                      })
+                    }
+                  />
+                ) : (
+                  <ImageDishCard
+                    key={dish.id}
+                    name={dish.name}
+                    price={`€${Number(dish.price).toFixed(2)}`}
+                    image={getImageUrl(dish.image)}
+                    onAdd={() =>
+                      addToCart({
+                        name: dish.name,
+                        price: Number(dish.price),
+                      })
+                    }
+                  />
+                )
+              )}
+            </div>
+          </MenuSection>
+        );
+      })}
 
-          <ImageDishCard
-            name="Bruschetta Duo"
-            price="€6.00"
-            image="/src/assets/dishes/bruschetta.jpg"
-            onAdd={() =>
-              addToCart({
-                name: "Bruschetta Duo",
-                price: 6
-              })
-            }
-          />
-        </div>
-      </MenuSection>
-
-
-
-      <MenuSection id="pasta" title="Main courses & pasta">
-        <Dish
-          name="Orecchiette with broccoli rabe"
-          price="€9.50"
-          onOpen={() =>
-            setSelectedDish({
-              name: "Orecchiette with broccoli rabe",
-              price: "€9.50",
-              image: "/src/assets/dishes/orecchiette.jpg"
-            })
-          }
-          onAdd={() =>
-            addToCart({
-              name: "Orecchiette with broccoli rabe",
-              price: 9.5
-            })
-              }
-         />
-
-        <Dish name="Ciceri e tria" price="€8.50" />
-        <Dish name="Zuppetta" price="€10.00" />
-      </MenuSection>
-
-      <MenuSection id="drinks" title="Drinks & coffee">
-        <Dish name="Water (75 cl)" price="€1.50" />
-        <Dish name="Italian craft beer" price="€4.00" />
-        <Dish name="Coffee" price="€1.00" />
-      </MenuSection>
-
-      <MenuSection id="sweets" title="Sweets">
-        <Dish name="Pupurati" price="€5.50" />
-        <Dish name="Pasticciotti Leccesi" price="€5.50" />
-      </MenuSection>
+      <FooterAllergens className="mt-16" />
     </>
   );
 }
@@ -258,7 +332,7 @@ function SectionLink({ label, to }) {
 function MenuSection({ id, title, children }) {
   return (
     <section id={id} className="mb-8 scroll-mt-32">
-      <h2 className="text-xl font-bold mb-4">{title}</h2>
+      <h2 className="font-display text-xl font-semibold tracking-tight mb-4">{title}</h2>
       <div className="space-y-4">{children}</div>
     </section>
   );
@@ -381,7 +455,8 @@ function OrderCard({ title, text, onClick, bg, disabled }) {
         disabled ? "cursor-not-allowed" : ""
       }`}
     >
-      <h2 className="font-bold text-lg mb-1">{title}</h2>
+      {/* <h2 className="font-bold text-lg mb-1">{title}</h2> */}
+      <h2 className="font-display text-lg font-semibold tracking-tight mb-1">{title}</h2>
       <p className="text-sm text-gray-800">{text}</p>
     </button>
   );
@@ -389,7 +464,10 @@ function OrderCard({ title, text, onClick, bg, disabled }) {
 
 
 function DishDetail({ dish, onClose, addToCart }) {
-  const basePrice = parseFloat(dish.price.replace("€", ""));
+  const basePrice =
+  typeof dish.price === "number"
+    ? dish.price
+    : parseFloat(dish.price.replace("€", ""));
   const [size, setSize] = useState("regular");
 
   const finalPrice = (() => {
@@ -407,21 +485,14 @@ function DishDetail({ dish, onClose, addToCart }) {
   ]);
 
   const updateQty = (index, delta) => {
-    setCart(prev => {
-      // 1. Clona l'array
-      const updated = [...prev];
-      
-      // 2. IMPORTANTE: Crea una nuova copia dell'oggetto specifico che stai modificando
-      updated[index] = { ...updated[index], qty: updated[index].qty + delta };
-
-      // 3. Rimuovi se quantità <= 0
-      if (updated[index].qty <= 0) {
-        updated.splice(index, 1);
-      }
-
-      return updated;
-    });
-  };
+  setIngredients(prev =>
+    prev.map((ing, i) =>
+      i === index
+        ? { ...ing, qty: Math.max(0, ing.qty + delta) }
+        : ing
+    )
+  );
+};
 
 
   return (
@@ -752,6 +823,41 @@ function Cart({ cart, setCart, onClose }) {
   );
 }
 
+function FooterAllergens() {
+  return (
+    <div className="mt-10 text-xs text-gray-500 space-y-3 pb-10">
+      
+      <p className>
+        For any <b>allergies</b> or <b>intolerances</b>, please speak to a member of staff before ordering.
+      </p>
 
+      <p className>
+        Dishes marked with numbers indicate the presence of allergens listed below.
+        Although every care is taken in preparing our dishes, we cannot guarantee the complete absence of cross-contamination.
+      </p>
+
+      <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-[11px]">
+        <span><b>1.</b> Gluten</span>
+        <span><b>2.</b> Crustaceans</span>
+        <span><b>3.</b> Eggs</span>
+        <span><b>4.</b> Fish</span>
+        <span><b>5.</b> Peanuts</span>
+        <span><b>6.</b> Soy</span>
+        <span><b>7.</b> Milk</span>
+        <span><b>8.</b> Nuts</span>
+        <span><b>9.</b> Celery</span>
+        <span><b>10.</b> Mustard</span>
+        <span><b>11.</b> Sesame</span>
+        <span><b>12.</b> Sulphites</span>
+        <span><b>13.</b> Lupin</span>
+        <span><b>14.</b> Molluscs</span>
+      </div>
+
+      <p className="italic">
+        Some products may be frozen at source or blast chilled on site in accordance with EC Regulation 852/2004.
+      </p>
+    </div>
+  );
+}
 
 export default App;
