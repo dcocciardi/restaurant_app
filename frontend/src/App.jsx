@@ -811,58 +811,60 @@ function Cart({ cart, setCart, onClose }) {
           {cart.map((item, index) => (
             <div
               key={index}
-              className="bg-white rounded-xl shadow p-4 flex justify-between items-center"
+              className="bg-white rounded-xl shadow p-4 grid grid-cols-[1fr_auto_auto] gap-3 items-center"
             >
-              <div>
-                <p className="font-semibold">{item.name}</p>
+              {/* NOME + REMOVE */}
+              <div className="min-w-0">
+                <p className="font-semibold leading-tight">{item.name}</p>
+
                 {item.size && (
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-gray-500 mt-1">
                     Size: {item.size.toUpperCase()}
                   </p>
                 )}
+
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    removeItem(index);
+                  }}
+                  className="mt-2 inline-flex items-center gap-1.5 bg-[#943232] text-white px-3 py-1 rounded-lg text-xs font-semibold active:scale-95 transition"
+                >
+                  <FontAwesomeIcon icon={faTrash} className="text-[11px]" />
+                  REMOVE
+                </button>
               </div>
 
-              <div className="flex items-center gap-3">
-                {/* BOTTONE MENO */}
+              {/* QUANTITÀ */}
+              <div className="flex items-center gap-1">
                 <button
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
                     updateQty(index, -1);
                   }}
-                  className="w-10 h-10 flex items-center justify-center text-gray-300 text-2xl"
+                  className="w-7 h-7 flex items-center justify-center text-gray-300 text-xl active:scale-90 transition"
                 >
                   <FontAwesomeIcon icon={faCircleMinus} />
                 </button>
 
-                <span className="font-semibold">{item.qty}</span>
+                <span className="font-semibold min-w-4 text-center">{item.qty}</span>
 
-                {/* BOTTONE PIÙ */}
                 <button
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
                     updateQty(index, 1);
                   }}
-                  className="w-10 h-10 flex items-center justify-center text-[#7c9425] text-2xl"
+                  className="w-7 h-7 flex items-center justify-center text-[#7c9425] text-xl active:scale-90 transition"
                 >
                   <FontAwesomeIcon icon={faCirclePlus} />
                 </button>
               </div>
 
-              {/* BOTTONE TRASH */}
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  removeItem(index);
-                }}
-                className="w-10 h-10 flex items-center justify-center text-[#943232] text-xl active:scale-90 transition"
-              >
-                <FontAwesomeIcon icon={faTrash} />
-              </button>
-
-              <div className="font-bold">
+              {/* PREZZO */}
+              <div className="font-bold whitespace-nowrap">
                 €{(item.price * item.qty).toFixed(2)}
               </div>
             </div>
